@@ -1,0 +1,31 @@
+# --- Internal working docs / Claude Code artifacts (NOT part of the deliverable) ---
+CLAUDE.md
+/docs/
+/.claude/
+
+# --- Backend (Spring Boot / Maven) ---
+backend/target/
+backend/.mvn/
+backend/*.iml
+backend/.idea/
+backend/HELP.md
+
+# --- Frontend (Next.js) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env*.local
+
+# --- Environment / secrets ---
+.env
+*.env
+!*.env.example
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Logs ---
+*.log
