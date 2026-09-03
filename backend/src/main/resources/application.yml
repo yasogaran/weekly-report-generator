@@ -5,13 +5,11 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
     username: root
-    password: root       # change this locally - do not commit real credentials
+    password: $pwd=Mysql5      
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      # 'update' auto-creates/updates tables from entities - fine for a 2-day build,
-      # would use versioned migrations (Flyway/Liquibase) on a real production project
       ddl-auto: update
     show-sql: true
     properties:
