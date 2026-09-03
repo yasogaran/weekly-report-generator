@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: root       # change this locally - do not commit real credentials
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # 'update' auto-creates/updates tables from entities - fine for a 2-day build,
+      # would use versioned migrations (Flyway/Liquibase) on a real production project
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# Custom application properties (read via @ConfigurationProperties or @Value)
+app:
+  jwt:
+    secret: change-this-to-a-long-random-secret-before-real-use-1234567890
+    expiration-ms: 86400000   # 24 hours
