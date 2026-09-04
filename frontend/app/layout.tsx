@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
+import { AuthProvider } from "@/lib/authContext";
 import "./globals.css";
 
 // Default UI font, applied globally via the CSS variable below.
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans antialiased">
         <ToastProvider>
-          <ConfirmProvider>{children}</ConfirmProvider>
+          <AuthProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>

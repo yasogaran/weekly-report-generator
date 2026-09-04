@@ -1,11 +1,28 @@
 server:
   port: 8080
+  servlet:
+    # All controllers map bare paths (e.g. "/auth/login") — this prefix is what turns those
+    # into the /api/* contract the frontend actually calls (docs/api/api-doc.md), in one
+    # place instead of repeating "/api" on every @RequestMapping.
+    context-path: /api
+
+# Frontend origin allowed to call this API (see config/SecurityConfig.java's CORS bean).
+# NEXT_PUBLIC_API_URL on the frontend defaults to http://localhost:8080 — this must be kept
+# in sync with wherever the frontend is actually served from.
+cors:
+  allowed-origin: http://localhost:3000
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    # allowPublicKeyRetrieval=true: local MySQL 8's default caching_sha2_password auth plugin
+    # needs the server's RSA public key to encrypt the password over a non-SSL connection,
+    # and refuses to send it unless this is explicitly allowed (MySQL Connector/J's own
+    # safety default) — without it, every connection attempt fails with "Public Key
+    # Retrieval is not allowed" before Hibernate ever runs a query. Safe for local dev only;
+    # a real deployment should use SSL instead of this flag.
+    url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
-    password: root       # change this locally - do not commit real credentials
+    password: $pwd=Mysql5       # change this locally - do not commit real credentials
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
