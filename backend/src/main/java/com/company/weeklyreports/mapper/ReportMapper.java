@@ -11,6 +11,7 @@ import com.company.weeklyreports.model.dto.ReportDTO;
 import com.company.weeklyreports.model.dto.ReportSummaryDTO;
 import com.company.weeklyreports.model.dto.TaskEntryDTO;
 import com.company.weeklyreports.model.dto.TaskEntryRequest;
+import com.company.weeklyreports.model.dto.UpdateReportRequest;
 import com.company.weeklyreports.model.entity.Achievement;
 import com.company.weeklyreports.model.entity.Blocker;
 import com.company.weeklyreports.model.entity.HoursByType;
@@ -20,6 +21,7 @@ import com.company.weeklyreports.model.entity.ReportStatus;
 import com.company.weeklyreports.model.entity.TaskEntry;
 import com.company.weeklyreports.model.entity.User;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -96,15 +98,70 @@ public class ReportMapper {
         if (request == null) {
             return null;
         }
+        return buildNewEntity(user, project, request.getWeekStartDate(), request.getWeekEndDate(),
+                request.getNotes(), request.getTaskEntries(), request.getBlockers(),
+                request.getAchievements(), request.getHoursByType());
+    }
 
+    // Same shape as the CreateReportRequest overload above - used by the
+    // versioning fork in ReportService when a NEEDS_CORRECTION report is
+    // edited. Builds an entirely new Report with its own fresh child
+    // entities (never reusing the old report's rows), so the old row can
+    // stay frozen as immutable history. versionNumber/parentReport are left
+    // at their defaults here; ReportService sets them once the old report
+    // (needed to compute versionNumber + 1 and the parent link) is in hand.
+    public static Report toEntity(UpdateReportRequest request, User user, Project project) {
+        if (request == null) {
+            return null;
+        }
+        return buildNewEntity(user, project, request.getWeekStartDate(), request.getWeekEndDate(),
+                request.getNotes(), request.getTaskEntries(), request.getBlockers(),
+                request.getAchievements(), request.getHoursByType());
+    }
+
+    // In-place edit path: mutates an existing (already-persisted) Report's
+    // own fields and replaces its child collections wholesale, rather than
+    // building a new Report row. Used only when the report is still DRAFT -
+    // nothing has been reviewed yet, so there's no history to protect and
+    // overwriting in place is safe.
+    public static void applyToEntity(Report existing, UpdateReportRequest request, Project project) {
+        existing.setProject(project);
+        existing.setWeekStartDate(request.getWeekStartDate());
+        existing.setWeekEndDate(request.getWeekEndDate());
+        existing.setNotes(request.getNotes());
+
+        // clear() (backed by orphanRemoval = true on Report's collections)
+        // deletes the old child rows on flush; re-adding fresh entities
+        // wired to this same report is simpler and less error-prone than
+        // diffing incoming vs. existing entries one by one.
+        existing.getTaskEntries().clear();
+        existing.getTaskEntries().addAll(toTaskEntryEntities(request.getTaskEntries(), existing));
+
+        existing.getBlockers().clear();
+        existing.getBlockers().addAll(toBlockerEntities(request.getBlockers(), existing));
+
+        existing.getAchievements().clear();
+        existing.getAchievements().addAll(toAchievementEntities(request.getAchievements(), existing));
+
+        existing.getHoursByType().clear();
+        existing.getHoursByType().addAll(toHoursByTypeEntities(request.getHoursByType(), existing));
+    }
+
+    // Shared construction logic behind both toEntity() overloads - a new
+    // report always starts at DRAFT / version 1 / no parent, since those
+    // only change afterward via the submit and correction-cycle flows.
+    private static Report buildNewEntity(User user, Project project, LocalDate weekStartDate,
+                                          LocalDate weekEndDate, String notes,
+                                          List<TaskEntryRequest> taskEntries, List<BlockerRequest> blockers,
+                                          List<AchievementRequest> achievements, List<HoursByTypeRequest> hoursByType) {
         Report report = Report.builder()
                 .user(user)
                 .project(project)
-                .weekStartDate(request.getWeekStartDate())
-                .weekEndDate(request.getWeekEndDate())
+                .weekStartDate(weekStartDate)
+                .weekEndDate(weekEndDate)
                 .status(ReportStatus.DRAFT)
                 .versionNumber(1)
-                .notes(request.getNotes())
+                .notes(notes)
                 .build();
 
         // Each child is built from its request and then explicitly wired
@@ -112,10 +169,10 @@ public class ReportMapper {
         // this back-reference, not by list membership alone, so it has to
         // be set on every child or Hibernate would persist them with a
         // null report_id.
-        report.getTaskEntries().addAll(toTaskEntryEntities(request.getTaskEntries(), report));
-        report.getBlockers().addAll(toBlockerEntities(request.getBlockers(), report));
-        report.getAchievements().addAll(toAchievementEntities(request.getAchievements(), report));
-        report.getHoursByType().addAll(toHoursByTypeEntities(request.getHoursByType(), report));
+        report.getTaskEntries().addAll(toTaskEntryEntities(taskEntries, report));
+        report.getBlockers().addAll(toBlockerEntities(blockers, report));
+        report.getAchievements().addAll(toAchievementEntities(achievements, report));
+        report.getHoursByType().addAll(toHoursByTypeEntities(hoursByType, report));
 
         return report;
     }

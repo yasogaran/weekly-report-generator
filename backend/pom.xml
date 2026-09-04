@@ -79,6 +79,15 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- SpringDoc OpenAPI: generates Swagger UI / the OpenAPI spec directly
+             from the existing controllers and their @Tag/@Operation/@ApiResponse
+             annotations, no hand-written spec to keep in sync -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
         <!-- Testing: JUnit 5, Mockito, MockMvc for RBAC tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

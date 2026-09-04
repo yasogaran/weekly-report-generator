@@ -49,6 +49,15 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    // Soft-delete flag, added for the User Management task: deactivating an
+    // account must never hard-delete the row, since Report.user and
+    // ReviewAction.reviewer both FK to User - removing the row would orphan
+    // (or cascade-destroy, if cascading were configured) a former team
+    // member's or manager's entire report/review history.
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
+
     // Set once at insert time via the @PrePersist hook below; never updated afterwards.
     @Column(updatable = false)
     private LocalDateTime createdAt;

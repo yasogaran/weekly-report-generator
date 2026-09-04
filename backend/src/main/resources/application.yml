@@ -22,3 +22,5 @@ app:
   jwt:
     secret: change-this-to-a-long-random-secret-before-real-use-1234567890
     expiration-ms: 86400000   # 24 hours
+  cors:
+    allowed-origin: http://localhost:3000   # the Next.js dev server; override for a deployed frontend

@@ -1,5 +1,6 @@
 package com.company.weeklyreports.repository;
 
+import com.company.weeklyreports.model.entity.Role;
 import com.company.weeklyreports.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +18,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Cheaper than findByEmail().isPresent() during registration - avoids
     // pulling back the whole row just to check for a duplicate email.
     boolean existsByEmail(String email);
+
+    // Denominator for the dashboard's complianceRate (added for the
+    // Dashboard task): how many team members are currently expected to
+    // submit a report at all. See DashboardService.getSummary() for the
+    // full definition and its caveats.
+    long countByRoleAndIsActiveTrue(Role role);
 }

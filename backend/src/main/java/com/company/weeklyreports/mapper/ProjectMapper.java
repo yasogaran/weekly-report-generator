@@ -2,6 +2,7 @@ package com.company.weeklyreports.mapper;
 
 import com.company.weeklyreports.model.dto.CreateProjectRequest;
 import com.company.weeklyreports.model.dto.ProjectDTO;
+import com.company.weeklyreports.model.dto.UpdateProjectRequest;
 import com.company.weeklyreports.model.entity.Project;
 import com.company.weeklyreports.model.entity.User;
 
@@ -39,5 +40,15 @@ public class ProjectMapper {
                 .isActive(true)
                 .createdBy(createdBy)
                 .build();
+    }
+
+    // In-place edit: name/description only. isActive is deliberately not
+    // touched here - it's updated only via the dedicated deactivate flow
+    // (ProjectService.deactivateProject), never folded into this
+    // general-purpose edit, per the design decision already noted on
+    // UpdateProjectRequest.
+    public static void applyToEntity(Project existing, UpdateProjectRequest request) {
+        existing.setName(request.getName());
+        existing.setDescription(request.getDescription());
     }
 }
