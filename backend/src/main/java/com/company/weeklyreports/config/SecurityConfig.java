@@ -78,11 +78,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(handling -> handling.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        // Only /auth/** is public (api-doc.md) — everything else requires a
-                        // valid JWT; role-specific restrictions beyond "authenticated" live
-                        // as @PreAuthorize on individual controller methods, not here, since
-                        // they're per-endpoint, not per-URL-pattern.
-                        .requestMatchers("/auth/**").permitAll()
+                        // Only /auth/login is public (api-doc.md — there is no self-service
+                        // registration) — everything else, including POST /users (manager-
+                        // driven account creation), requires a valid JWT; role-specific
+                        // restrictions beyond "authenticated" live as @PreAuthorize on
+                        // individual controller methods, not here, since they're per-endpoint,
+                        // not per-URL-pattern.
+                        .requestMatchers("/auth/login").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

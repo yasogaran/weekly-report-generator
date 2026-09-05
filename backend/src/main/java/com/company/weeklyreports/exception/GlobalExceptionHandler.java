@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Spring's own "nothing matched this URL" exception — thrown for any request that isn't
-     * one of /auth/register, /auth/login, or an endpoint a controller actually implements.
+     * /auth/login or an endpoint a controller actually implements.
      * Without this specific handler, the catch-all Exception handler below would swallow it
      * and turn a legitimate 404 (unmapped route) into a misleading 500 — exactly what was
      * happening for every /api/* endpoint not yet built (projects, users, dashboard, reports).

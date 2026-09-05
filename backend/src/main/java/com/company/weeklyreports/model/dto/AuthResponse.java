@@ -3,7 +3,7 @@ package com.company.weeklyreports.model.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** Response shape for both POST /auth/register and POST /auth/login (api-doc.md — identical shape). */
+/** Response shape for POST /auth/login. */
 @Getter
 @AllArgsConstructor
 public class AuthResponse {

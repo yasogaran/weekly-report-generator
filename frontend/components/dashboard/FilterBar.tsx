@@ -39,6 +39,11 @@ interface FilterBarProps {
   // their own copy of GET /api/users.
   members: UserDTO[];
   projects: ProjectDTO[];
+  /** Hides the Member dropdown — for a team member's own history page, where "member" is
+   * implicitly always the viewer, so the filter would be both redundant and (since only a
+   * manager can even list other users) unusable. Defaults true so every existing caller
+   * (dashboard, manager report queue) is unaffected. */
+  showMemberFilter?: boolean;
 }
 
 // SCOPE NOTE (read before wiring this up to anything new): the summary and chart endpoints
@@ -55,27 +60,35 @@ interface FilterBarProps {
 // One filter can't even do that much: ActivityFeedItemDTO has no project field at all
 // (docs/api/api-doc.md), so the project filter below has no effect on anything yet — it's
 // built because the task asked for it to exist, not because it's functional today.
-export default function FilterBar({ filters, onChange, members, projects }: FilterBarProps) {
+export default function FilterBar({
+  filters,
+  onChange,
+  members,
+  projects,
+  showMemberFilter = true,
+}: FilterBarProps) {
   const setField = <K extends keyof DashboardFilters>(field: K, value: DashboardFilters[K]) => {
     onChange({ ...filters, [field]: value });
   };
 
   return (
     <div className="flex flex-wrap items-end gap-4">
-      <label className="flex flex-col gap-1 text-sm font-medium text-ink">
-        Member
-        <Select
-          value={filters.memberId ?? ""}
-          onChange={(event) =>
-            setField("memberId", event.target.value ? Number(event.target.value) : null)
-          }
-          options={[
-            { value: "", label: "All members" },
-            ...members.map((member) => ({ value: String(member.id), label: member.name })),
-          ]}
-          className="w-44"
-        />
-      </label>
+      {showMemberFilter && (
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink">
+          Member
+          <Select
+            value={filters.memberId ?? ""}
+            onChange={(event) =>
+              setField("memberId", event.target.value ? Number(event.target.value) : null)
+            }
+            options={[
+              { value: "", label: "All members" },
+              ...members.map((member) => ({ value: String(member.id), label: member.name })),
+            ]}
+            className="w-44"
+          />
+        </label>
+      )}
 
       <label className="flex flex-col gap-1 text-sm font-medium text-ink">
         Project

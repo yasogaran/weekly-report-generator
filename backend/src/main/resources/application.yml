@@ -1,3 +1,38 @@
+spring:
+  config:
+    # Pulls in application-local.yml if present (gitignored — see .example for the template
+    # committed instead). "optional:" so a fresh checkout without that file yet doesn't fail
+    # to even start Spring's config loading; the missing DB_PASSWORD/JWT_SECRET below is what
+    # actually fails startup obviously, instead of this import doing it silently.
+    import: "optional:classpath:application-local.yml"
+
+  datasource:
+    # allowPublicKeyRetrieval=true: local MySQL 8's default caching_sha2_password auth plugin
+    # needs the server's RSA public key to encrypt the password over a non-SSL connection,
+    # and refuses to send it unless this is explicitly allowed (MySQL Connector/J's own
+    # safety default) — without it, every connection attempt fails with "Public Key
+    # Retrieval is not allowed" before Hibernate ever runs a query. Safe for local dev only;
+    # a real deployment should use SSL instead of this flag.
+    url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    # username getting a "root" fallback is fine - not a secret. password has NO real
+    # fallback - an empty string means a misconfigured environment (no
+    # application-local.yml, no DB_PASSWORD env var) fails obviously at startup instead of
+    # silently connecting with a weak/guessable default.
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # 'update' auto-creates/updates tables from entities - fine for a 2-day build,
+      # would use versioned migrations (Flyway/Liquibase) on a real production project
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
 server:
   port: 8080
   servlet:
@@ -12,32 +47,9 @@ server:
 cors:
   allowed-origin: http://localhost:3000
 
-spring:
-  datasource:
-    # allowPublicKeyRetrieval=true: local MySQL 8's default caching_sha2_password auth plugin
-    # needs the server's RSA public key to encrypt the password over a non-SSL connection,
-    # and refuses to send it unless this is explicitly allowed (MySQL Connector/J's own
-    # safety default) — without it, every connection attempt fails with "Public Key
-    # Retrieval is not allowed" before Hibernate ever runs a query. Safe for local dev only;
-    # a real deployment should use SSL instead of this flag.
-    url: jdbc:mysql://localhost:3306/weekly_reports?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: $pwd=Mysql5       # change this locally - do not commit real credentials
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      # 'update' auto-creates/updates tables from entities - fine for a 2-day build,
-      # would use versioned migrations (Flyway/Liquibase) on a real production project
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-
 # Custom application properties (read via @ConfigurationProperties or @Value)
 app:
   jwt:
-    secret: change-this-to-a-long-random-secret-before-real-use-1234567890
+    # No real fallback, same reasoning as datasource.password above.
+    secret: ${JWT_SECRET:}
     expiration-ms: 86400000   # 24 hours

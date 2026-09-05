@@ -19,8 +19,8 @@ export interface CurrentUser {
   role: UserRole;
 }
 
-// Shape of AuthResponse from POST /api/auth/login and /api/auth/register (docs/api/api-doc.md).
-// `createdAt` comes back too but nothing in this app currently needs it, so it's not modeled.
+// Shape of AuthResponse from POST /api/auth/login (docs/api/api-doc.md). `createdAt` comes
+// back too but nothing in this app currently needs it, so it's not modeled.
 interface AuthResponse {
   token: string;
   user: CurrentUser;
@@ -30,7 +30,6 @@ interface AuthContextValue {
   currentUser: CurrentUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<CurrentUser>;
-  register: (name: string, email: string, password: string) => Promise<CurrentUser>;
   logout: () => void;
 }
 
@@ -136,20 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user;
   }, []);
 
-  // Self-registration is always TEAM_MEMBER server-side (role is never accepted from the
-  // client — api-doc.md), but this still returns whatever role the backend assigns rather
-  // than assuming, so call sites don't need to know that detail.
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const data = await apiRequest<AuthResponse>("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ name, email, password }),
-    });
-    localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-    setSessionFlagCookie(true);
-    setCurrentUser(data.user);
-    return data.user;
-  }, []);
-
   // There's no server-side logout endpoint (JWT is stateless — api-doc.md) — "logging out"
   // is purely a client-side act of discarding the token.
   const logout = useCallback(() => {
@@ -159,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

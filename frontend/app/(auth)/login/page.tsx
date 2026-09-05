@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import Button from "@/components/ui/Button";
@@ -86,12 +85,6 @@ export default function LoginPage() {
         <Button type="submit" disabled={submitting} className="mt-6 w-full">
           {submitting ? "Signing in…" : "Sign in"}
         </Button>
-        <p className="mt-4 text-sm text-muted">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-accent hover:underline">
-            Register
-          </Link>
-        </p>
       </form>
     </main>
   );

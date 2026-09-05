@@ -3,6 +3,8 @@
 // straight into a CreateReportRequest/UpdateReportRequest body with no translation layer, so
 // a renamed field here would silently break the request instead of failing loudly.
 
+import { getDefaultReportWeek } from "./dateUtils";
+
 export type TaskEntryType = "COMPLETED" | "PLANNED_NEXT_WEEK";
 
 export type ReportStatus = "DRAFT" | "SUBMITTED" | "NEEDS_CORRECTION" | "APPROVED";
@@ -99,10 +101,13 @@ export interface ReviewActionDTO {
 // point to the shape the form actually edits.
 export function toFormData(report?: ReportDTO): ReportFormData {
   if (!report) {
+    // Prefill with the current Mon-Sat week instead of blank dates — getDefaultReportWeek()
+    // existed as a util but nothing ever called it, so new-report dates were always empty.
+    const { weekStartDate, weekEndDate } = getDefaultReportWeek();
     return {
       projectId: null,
-      weekStartDate: "",
-      weekEndDate: "",
+      weekStartDate,
+      weekEndDate,
       notes: "",
       taskEntries: [],
       blockers: [],

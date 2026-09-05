@@ -20,6 +20,7 @@ frontend/.env*.local
 .env
 *.env
 !*.env.example
+backend/src/main/resources/application-local.yml
 
 # --- OS / editor noise ---
 .DS_Store

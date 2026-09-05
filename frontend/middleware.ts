@@ -15,7 +15,9 @@ const SESSION_FLAG_COOKIE = "wrg_has_session";
 // Routes that don't require a session. (auth) pages plus the public marketing/home page —
 // everything else, including the future (member)/* and (manager)/* pages (route groups
 // don't appear in the URL, so they can't be matched by folder name here), requires one.
-const PUBLIC_PATHS = ["/", "/login", "/register"];
+// No /register here — there is no self-service registration (docs/api/api-doc.md); accounts
+// are created by a manager via /users.
+const PUBLIC_PATHS = ["/", "/login"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
